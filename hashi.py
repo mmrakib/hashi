@@ -11,6 +11,11 @@
 # <mapdata>
 
 import sys
+import math
+
+def error(message):
+    print(f'ERROR: {message}')
+    exit(1)
 
 class GraphNode:
     def __init__(self, n, x, y):
@@ -22,13 +27,16 @@ class GraphNode:
         return f'(n = {self.n}, x = {self.x}, y = {self.y})'
 
 class Graph:
-    def __init__(self, m):
-        self.m = m
+    def __init__(self, map):
+        self.map = map
         self.nodes = []
-        text = self.m.get_text()
+
+        text = self.map.get_text()
+
         for i, line in enumerate(text):
             for j, ch in enumerate(line):
                 n = ord(ch)
+
                 if (ch == '.'):
                     continue
                 if (n >= 48 and n <= 57):
@@ -37,10 +45,20 @@ class Graph:
                 if (n >= 97 and n <= 122):
                     node = GraphNode(n - 87, i, j)
                     self.nodes.append(node)
-        
+
+    @staticmethod
+    def calc_dist(n1, n2):
+        if (n1.y == n2.y):
+            return abs(n1.x - n2.x)
+        elif (n1.x == n2.x):
+            return abs(n1.y - n2.y)
+        else:
+            error('Tried to calculate diagonal distances')
+
     def find_neighbours(self, target):
         x_neighbours = []
         y_neighbours = []
+
         for node in self.nodes:
             if (target.x == node.x and target.y == node.y):
                 continue
@@ -48,21 +66,56 @@ class Graph:
                 x_neighbours.append(node)
             if (target.y == node.y):
                 y_neighbours.append(node)
-
+        
         return x_neighbours, y_neighbours
-    
+
+    def find_nearest_neighbours(self, target):
+        x_neighbours, y_neighbours = self.find_neighbours(target)
+
+        nearest_neighbours = {'up': None, 'down': None, 'left': None, 'right': None}
+        min_dists = {'up': math.inf, 'down': math.inf, 'left': math.inf, 'right': math.inf}
+
+        for node in x_neighbours:
+            if (node.y < target.y): # Left
+                dist = Graph.calc_dist(node, target)
+                if (dist < min_dists['left']):
+                    nearest_neighbours['left'] = node
+                    min_dists['left'] = dist
+
+            if (node.y > target.y): # Right
+                dist = Graph.calc_dist(node, target)
+                if (dist < min_dists['right']):
+                    nearest_neighbours['right'] = node
+                    min_dists['right'] = dist
+        
+        for node in y_neighbours:
+            if (node.x < target.x): # Up
+                dist = Graph.calc_dist(node, target)
+                if (dist < min_dists['up']):
+                    nearest_neighbours['up'] = node
+                    min_dists['up'] = dist
+
+            if (node.x > target.x): # Down
+                dist = Graph.calc_dist(node, target)
+                if (dist < min_dists['down']):
+                    nearest_neighbours['down'] = node
+                    min_dists['down'] = dist
+
+        return nearest_neighbours
+        
     def print_graph(self):
         print('Graph:')
+
         for node in self.nodes:
             print('current node:')
             print(node)
-            x_neighbours, y_neighbours = self.find_neighbours(node)
-            print('x neighbours:')
-            for xn in x_neighbours:
-                print(xn)
-            print('y neighbours:')
-            for yn in y_neighbours:
-                print(yn)
+            nearest_neighbours = self.find_nearest_neighbours(node)
+
+            print('nearest neighbours:')
+            print(f'left: {str(nearest_neighbours['left'])}')
+            print(f'right: {str(nearest_neighbours['right'])}')
+            print(f'up: {str(nearest_neighbours['up'])}')
+            print(f'down: {str(nearest_neighbours['down'])}')
             print('')
 
 class Map:
@@ -106,6 +159,7 @@ class Map:
 
     def print_map(self):
         print('Map:')
+
         for row in self.text:
             for i, col in enumerate(row):
                 if (i == len(row) - 1):
@@ -125,13 +179,16 @@ def print_usage():
 if __name__ == '__main__':
     if len(sys.argv) == 2:
         filename = sys.argv[1]
+
         map = Map(filename)
         graph = Graph(map)
+
         map.print_map()
         graph.print_graph()
     elif len(sys.argv) == 1:
         map = Map()
         graph = Graph(map)
+
         map.print_map()
         graph.print_graph()
     else:
