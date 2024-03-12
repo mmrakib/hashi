@@ -17,12 +17,63 @@ def error(message):
     print(f'ERROR: {message}')
     exit(1)
 
+class Map:
+    def __init__(self, filename=''):
+        text = []
+        if (filename != ''):
+            with open(filename, 'r') as f:
+                row = []
+                while True:
+                    ch = f.read(1)
+                    if (ch == '\n'):
+                        text.append(row)
+                        row = []
+                        continue
+                    if not ch:
+                        break
+                    row.append(ch)
+        else:
+            for line in sys.stdin:
+                row = []
+                for ch in line:
+                    if (ch == '\n'):
+                        continue
+                    if not ch:
+                        break
+                    row.append(ch)
+                text.append(row)
+
+        self.text = text
+        self.nrows = len(text)
+        self.ncols = len(text[0])
+
+    def get_text(self):
+        return self.text
+    
+    def get_nrows(self):
+        return self.nrows
+    
+    def get_ncols(self):
+        return self.ncols
+
+    def print_map(self):
+        print('Map:')
+
+        for row in self.text:
+            for i, col in enumerate(row):
+                if (i == len(row) - 1):
+                    print(col)
+                else:
+                    print(col, end='')
+
 class GraphNode:
     def __init__(self, n, x, y):
         self.n = n
-        self.nleft = n
         self.x = x
         self.y = y
+    
+    def set_neighbours(self, neighbours):
+        self.neighbours = neighbours
 
     def __str__(self):
         return f'(n = {self.n}, x = {self.x}, y = {self.y})'
@@ -53,6 +104,10 @@ class Graph:
                 if (n >= 97 and n <= 122):
                     node = GraphNode(n - 87, i, j)
                     self.nodes.append(node)
+        
+        for node in self.nodes:
+            neighbours = self.find_nearest_neighbours(self, node)
+            node.set_neighbours(neighbours)
 
     @staticmethod
     def calc_dist(n1, n2):
@@ -114,70 +169,41 @@ class Graph:
                     min_dists['down'] = dist
 
         return nearest_neighbours
+    
+    def get_map(self):
+        return self.map
+    
+    def get_nodes(self):
+        return self.nodes
+    
+    def get_edges(self):
+        return self.edges
+    
+    def set_nodes(self, nodes):
+        self.nodes = nodes
+
+    def set_edges(self, edges):
+        self.edges = edges
+    
+    def add_edge(self, edge):
+        self.edges.append(edge)
         
     def print_graph(self):
         print('Graph:')
 
         for node in self.nodes:
-            print('current node:')
             print(node)
-            nearest_neighbours = self.find_nearest_neighbours(node)
 
-            print('nearest neighbours:')
-            print(f'left: {str(nearest_neighbours['left'])}')
-            print(f'right: {str(nearest_neighbours['right'])}')
-            print(f'up: {str(nearest_neighbours['up'])}')
-            print(f'down: {str(nearest_neighbours['down'])}')
-            print('')
+class Solver:
+    def __init__(self, graph):
+        self.graph = graph
+        self.map = graph.get_map()
 
-class Map:
-    def __init__(self, filename=''):
-        text = []
-        if (filename != ''):
-            with open(filename, 'r') as f:
-                row = []
-                while True:
-                    ch = f.read(1)
-                    if (ch == '\n'):
-                        text.append(row)
-                        row = []
-                        continue
-                    if not ch:
-                        break
-                    row.append(ch)
-        else:
-            for line in sys.stdin:
-                row = []
-                for ch in line:
-                    if (ch == '\n'):
-                        continue
-                    if not ch:
-                        break
-                    row.append(ch)
-                text.append(row)
+    def run(self):
+        pass
 
-        self.text = text
-        self.nrows = len(text)
-        self.ncols = len(text[0])
-
-    def get_text(self):
-        return self.text
-    
-    def get_nrows(self):
-        return self.nrows
-    
-    def get_ncols(self):
-        return self.ncols
-
-    def print_map(self):
-        print('Map:')
-
-        for row in self.text:
-            for i, col in enumerate(row):
-                if (i == len(row) - 1):
-                    print(col)
-                else:
-                    print(col, end='')
+    def dfs(self):
+        pass
 
 def print_usage():
     print('hashi.py (By Mohammad M. Rakib, z5361151)\n')
