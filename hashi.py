@@ -12,6 +12,37 @@
 
 import sys
 
+class GraphNode:
+    def __init__(self, n, x, y):
+        self.n = n
+        self.x = x
+        self.y = y
+
+    def __str__(self):
+        return f'(n = {self.n}, x = {self.x}, y = {self.y})'
+
+class Graph:
+    def __init__(self, m):
+        self.m = m
+        self.nodes = []
+        text = self.m.get_text()
+        for i, line in enumerate(text):
+            for j, ch in enumerate(line):
+                n = ord(ch)
+                if (ch == '.'):
+                    continue
+                if (n >= 48 and n <= 57):
+                    node = GraphNode(n - 48, i, j)
+                    self.nodes.append(node)
+                if (n >= 97 and n <= 122):
+                    node = GraphNode(n - 87, i, j)
+                    self.nodes.append(node)
+    
+    def print_graph(self):
+        print('Graph:')
+        for node in self.nodes:
+            print(node)
+
 class Map:
     def __init__(self, filename=''):
         text = []
@@ -38,12 +69,22 @@ class Map:
                     row.append(ch)
                 text.append(row)
 
-        self.raw = text
+        self.text = text
         self.nrows = len(text)
         self.ncols = len(text[0])
 
-    def print_raw(self):
-        for row in self.raw:
+    def get_text(self):
+        return self.text
+    
+    def get_nrows(self):
+        return self.nrows
+    
+    def get_ncols(self):
+        return self.ncols
+
+    def print_map(self):
+        print('Map:')
+        for row in self.text:
             for i, col in enumerate(row):
                 if (i == len(row) - 1):
                     print(col)
@@ -63,8 +104,14 @@ if __name__ == '__main__':
     if len(sys.argv) == 2:
         filename = sys.argv[1]
         map = Map(filename)
+        graph = Graph(map)
+        map.print_map()
+        graph.print_graph()
     elif len(sys.argv) == 1:
         map = Map()
+        graph = Graph(map)
+        map.print_map()
+        graph.print_graph()
     else:
         print_usage()
         exit(1)
