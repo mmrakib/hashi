@@ -1,0 +1,85 @@
+import sys
+from itertools import product, combinations
+
+bridges = []
+grid = [[[0, (row, col, cell, [])][cell != '.'] for col, cell in enumerate(line.strip())] for row, line in enumerate(open(sys.argv[1]))]
+rows = range(len(grid))
+cols = range(len(grid[0]))
+
+# Find possible bridge configurations
+for point1, point2 in combinations(product(rows, cols), 2):
+    row1, col1 = point1
+    row2, col2 = point2
+    
+    if grid[row1][col1] and grid[row2][col2]:
+        if row1 == row2 and abs(col1 - col2) > 1:
+            is_horizontal = True
+            gap_range = range(min(col1, col2) + 1, max(col1, col2))
+            is_valid = all(grid[row1][col] == 0 for col in gap_range)
+            if is_valid:
+                bridges.append((point1, point2, [row1], gap_range, is_horizontal))
+        
+        if col1 == col2 and abs(row1 - row2) > 1:
+            is_horizontal = False
+            gap_range = range(min(row1, row2) + 1, max(row1, row2))
+            is_valid = all(grid[row][col1] == 0 for row in gap_range)
+            if is_valid:
+                bridges.append((point1, point2, gap_range, [col1], is_horizontal))
+
+def solve_bridge_configurations(values, index, mapping):
+    if index >= len(values):
+        return None
+    
+    for j in [2, 1, 0]:
+        values[index] = j
+        temp_mapping = dict(mapping)
+        is_valid = True
+        
+        for l in [0, 1]:
+            point = bridges[index][l]
+            if point not in temp_mapping:
+                temp_mapping[point] = 0
+            temp_mapping[point] += j
+            island_value = int(grid[point[0]][point[1]][0])
+            if temp_mapping[point] > island_value:
+                is_valid = False
+        
+        if not is_valid:
+            continue
+        
+        bridge_pairs = [(direction1, direction2) for bridge_index in range(index + 1) for direction1, direction2 in product(bridges[bridge_index][2], bridges[bridge_index][3]) if values[bridge_index] > 0]
+        if len(bridge_pairs) != len(set(bridge_pairs)):
+            continue
+        
+        if index == len(values) - 1:
+            is_complete = True
+            for row, col in product(rows, cols):
+                island = grid[row][col]
+                if not island:
+                    continue
+                if temp_mapping[(island[1], island[2])] != int(island[0]):
+                    is_complete = False
+                    break
+            if is_complete:
+                return values
+        
+        result = solve_bridge_configurations(values, index + 1, temp_mapping)
+        if result:
+            return result
+
+# Solve the puzzle
+values = solve_bridge_configurations([None] * len(bridges), 0, {})
+
+# Apply the solved bridge configurations to the grid
+for index, value in zip(bridges, values):
+    if value > 0:
+        for row, col in product(index[2], index[3]):
+            grid[row][col] = [['|', '$'][value - 1], ['-', '='][value - 1]][index[4]]
+
+# Output the solved grid
+for row in grid:
+    for cell in row:
+        if not cell:
+            cell = [' ']
+        sys.stdout.write(cell[0])
+    print("")
