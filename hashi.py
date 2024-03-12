@@ -37,11 +37,33 @@ class Graph:
                 if (n >= 97 and n <= 122):
                     node = GraphNode(n - 87, i, j)
                     self.nodes.append(node)
+        
+    def find_neighbours(self, target):
+        x_neighbours = []
+        y_neighbours = []
+        for node in self.nodes:
+            if (target.x == node.x and target.y == node.y):
+                continue
+            if (target.x == node.x):
+                x_neighbours.append(node)
+            if (target.y == node.y):
+                y_neighbours.append(node)
+
+        return x_neighbours, y_neighbours
     
     def print_graph(self):
         print('Graph:')
         for node in self.nodes:
+            print('current node:')
             print(node)
+            x_neighbours, y_neighbours = self.find_neighbours(node)
+            print('x neighbours:')
+            for xn in x_neighbours:
+                print(xn)
+            print('y neighbours:')
+            for yn in y_neighbours:
+                print(yn)
+            print('')
 
 class Map:
     def __init__(self, filename=''):
