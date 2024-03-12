@@ -20,16 +20,24 @@ def error(message):
 class GraphNode:
     def __init__(self, n, x, y):
         self.n = n
+        self.nleft = n
         self.x = x
         self.y = y
 
     def __str__(self):
         return f'(n = {self.n}, x = {self.x}, y = {self.y})'
+    
+class GraphEdge:
+    def __init__(self, n1, n2, numbridges):
+        self.n1 = n1
+        self.n2 = n2
+        self.numbridges = numbridges
 
 class Graph:
     def __init__(self, map):
         self.map = map
         self.nodes = []
+        self.edges = []
 
         text = self.map.get_text()
 
@@ -76,26 +84,30 @@ class Graph:
         min_dists = {'up': math.inf, 'down': math.inf, 'left': math.inf, 'right': math.inf}
 
         for node in x_neighbours:
-            if (node.y < target.y): # Left
+            # Left
+            if (node.y < target.y):
                 dist = Graph.calc_dist(node, target)
                 if (dist < min_dists['left']):
                     nearest_neighbours['left'] = node
                     min_dists['left'] = dist
 
-            if (node.y > target.y): # Right
+            # Right
+            if (node.y > target.y):
                 dist = Graph.calc_dist(node, target)
                 if (dist < min_dists['right']):
                     nearest_neighbours['right'] = node
                     min_dists['right'] = dist
         
         for node in y_neighbours:
-            if (node.x < target.x): # Up
+            # Up
+            if (node.x < target.x):
                 dist = Graph.calc_dist(node, target)
                 if (dist < min_dists['up']):
                     nearest_neighbours['up'] = node
                     min_dists['up'] = dist
 
-            if (node.x > target.x): # Down
+            # Down
+            if (node.x > target.x):
                 dist = Graph.calc_dist(node, target)
                 if (dist < min_dists['down']):
                     nearest_neighbours['down'] = node
