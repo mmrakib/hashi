@@ -58,7 +58,7 @@ def s(v,i,m):
    n=e[i][l]
    if not n in q:q[n]=0
    q[n]+=j
-   y=int(p[n[0]][n[1]][0])
+   y=convert(p[n[0]][n[1]][0])
    if q[n]>y:b=0
   if not b:continue
   a=[d for b in range(i+1) for d in product(e[b][2],e[b][3]) if v[b]>0]
@@ -68,13 +68,17 @@ def s(v,i,m):
    for l,z in product(r,c):
     n=p[l][z]
     if not n:continue
-    if q[(n[1],n[2])]!=int(n[0]):g=0
+    if q[(n[1],n[2])]!=convert(n[0]):g=0
    if g:return v
   u=s(v,i+1,q)
   if u:return u
 for i,v in zip(e,s([None]*len(e),0,{})):
- if v>0:
-  for j,k in product(i[2],i[3]):p[j][k]=[[['|','$'][v-1],['-','='][v-1]][i[4]]]
+ if v > 0:
+    for j, k in product(i[2], i[3]):
+        if v == 3:
+            p[j][k] = '#' if i[4] == 1 else 'E'
+        else:
+            p[j][k] = [['|', '$'][v - 1], ['-', '='][v - 1]][i[4]]
 for l in p:
  for c in l:
   if not c:c=[' ']
