@@ -6,7 +6,7 @@ from itertools import product
 data = sys.stdin.read().split()
 coords = list(product(range(len(data)), range(len(data[0]))))
 points = {coord: [] for coord in coords}
-nodes = {(i, j): int(data[i][j]) for i, j in coords if '.' != data[i][j]}
+nodes = {(i, j): int(data[i][j]) for i, j in coords if data[i][j] != '.'}
 bridges = []
 
 for coord, count in nodes.items():
