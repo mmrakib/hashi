@@ -2,6 +2,7 @@
 
 import sys
 from itertools import product, combinations
+from pprint import pprint
 
 def load_grid():
     grid = []
@@ -50,6 +51,5 @@ if __name__ == '__main__':
     grid, nrows, ncols = load_grid()
     print_grid(grid)
     bridges = generate_bridge_configurations(grid, nrows, ncols)
-    print('Bridges')
     for b in bridges:
         print(b)
