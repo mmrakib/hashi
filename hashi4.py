@@ -3,10 +3,20 @@
 import sys
 from itertools import product
 
+def convert(ch):
+    if (ch.isdigit()):
+        return int(ch)
+    elif (ch == 'a'):
+        return 10
+    elif (ch == 'b'):
+        return 11
+    elif (ch == 'c'):
+        return 12
+
 data = sys.stdin.read().split()
 coords = list(product(range(len(data)), range(len(data[0]))))
 points = {coord: [] for coord in coords}
-nodes = {(i, j): int(data[i][j]) for i, j in coords if '.' != data[i][j]}
+nodes = {(i, j): convert(data[i][j]) for i, j in coords if data[i][j] != '.'}
 bridges = []
 
 for coord, count in nodes.items():
@@ -15,7 +25,7 @@ for coord, count in nodes.items():
         bridge = [coord, 0]
         while next_coord in coords:
             points[next_coord] += [bridge]
-            if next_coord in nodes:
+            if next_coord in nodes.items():
                 bridge[1] = next_coord
                 points[coord] += [bridge]
                 bridges += [bridge]
@@ -27,45 +37,40 @@ candidates = [points[p] for p in coords if p not in nodes and len(points[p]) > 1
 matrix = []
 total_length = len(nodes) + 4 * len(bridges) + len(candidates)
 start = 0
-start_nodes = {}
+l = {}
 
 for coord, count in nodes.items():
-    connected = points[coord]
-    bridge_length = len(connected) * 2
-    for t in product(*((0, 1, 2) for x in connected)):
+    e = points[coord]
+    u = len(e) * 2
+    for t in product(*((0, 1, 2) for x in e)):
         if sum(t) != count:
             continue
         row = [0] * total_length
-        row[start + bridge_length] = 1
+        row[start + u] = 1
         for i, x in enumerate(t):
             k = start + i * 2
             row[k:k + 2] = ((1, 1), (0, 1), (0, 0))[x]
         matrix += [row]
-    start_nodes[coord] = start
-    start += bridge_length + 1
+    l[coord] = start
+    start += u + 1
 
 matrix_length = len(matrix)
-
 for bridge in bridges:
     start_node, end_node = bridge
     row = [0] * total_length
-    start_index, end_index = start_nodes[start_node] + points[start_node].index(bridge) * 2, start_nodes[end_node] + points[end_node].index(bridge) * 2
+    start_index, end_index = l[start_node] + points[start_node].index(e) * 2, l[end_node] + points[end_node].index(e) * 2
     t = row[:]
     row[start_index] = row[end_index] = 1
     for i, u in enumerate(candidates):
-        row[total_length - len(candidates) + i] = int(bridge in u)
+        row[total_length - len(candidates) + i] = int(e in u)
     t[start_index + 1] = t[end_index + 1] = 1
     matrix += [row, t]
 
-left, right, up, down, candidates = {}, {}, {}, {}, {}
-header = total_length
-left[header] = right[header] = down[header] = up[header] = header
-
-def get_connected_nodes(node, dir):
-    connected = dir[node]
-    while connected != node:
-        yield connected
-        connected = dir[connected]
+def get_connected_nodes(node, direction):
+    connected_node = direction[node]
+    while connected_node != node:
+        yield connected_node
+        connected_node = direction[connected_node]
 
 def add_left(node):
     left[right[node]], right[left[node]] = left[node], right[node]
@@ -80,43 +85,47 @@ def add_right(node):
     left[right[node]], right[left[node]] = node, node
 
 def search():
-    node = right[header]
-    if node == header:
+    node = right[last]
+    if node == last:
         yield []
     add_left(node)
     for row in get_connected_nodes(node, down):
-        for connected in get_connected_nodes(row, right):
-            add_left(candidates[connected])
+        for x in get_connected_nodes(row, right):
+            add_left(C[x])
         for t in search():
             yield [row[0]] + t
-        for connected in get_connected_nodes(row, left):
-            add_right(candidates[connected])
+        for x in get_connected_nodes(row, left):
+            add_right(C[x])
     add_right(node)
 
+left, right, up, down, C = {}, {}, {}, {}, {}
+last = total_length
+left[last] = right[last] = down[last] = up[last] = last
+
 for coord in range(total_length):
-    right[left[header]], right[coord], left[header], left[coord] = coord, header, coord, left[header]
+    right[left[last]], right[coord], left[last], left[coord] = coord, last, coord, left[last]
     up[coord] = down[coord] = coord
 
-for index, row in enumerate(matrix):
-    start_index = 0
-    for col in get_connected_nodes(header, right):
-        if row[col]:
-            node = index, col
-            down[up[col]], down[node], up[col], up[node], candidates[node] = node, col, node, up[col], col
-            if start_index == 0:
-                left[node] = right[node] = start_index = node
-            right[left[start_index]], right[node], left[start_index], left[node] = node, start_index, node, left[start_index]
+for i, l in enumerate(matrix):
+    s = 0
+    for node in get_connected_nodes(last, right):
+        if l[node]:
+            r = i, node
+            down[up[node]], down[r], up[node], up[r], C[r] = r, node, r, up[node], node
+            if s == 0:
+                left[r] = right[r] = s = r
+            right[left[s]], right[r], left[s], left[r] = r, s, r, left[s]
 
-for solution in search():
-    grid = list(map(list, data))
-    for bridge in solution:
-        if bridge < matrix_length:
+for s in search():
+    b = list(map(list, data))
+    for e in s:
+        if e < matrix_length:
             continue
-        (i, j), (x, y) = bridges[(bridge - matrix_length) // 2]
+        (i, j), (x, y) = bridges[(e - matrix_length) // 2]
         if j == y:
-            for row in range(i + 1, x):
-                grid[row][j] = '|H'[grid[row][j] == '|']
+            for r in range(i + 1, x):
+                b[r][j] = '|H'[b[r][j] == '|']
         else:
-            for col in range(j + 1, y):
-                grid[i][col] = '-='[grid[i][col] == '-']
-    print('\n'.join(''.join(row) for row in grid).replace('.', ' '))
+            for r in range(j + 1, y):
+                b[i][r] = '-='[b[i][r] == '-']
+    print('\n'.join(''.join(l) for l in b).replace('.', ' '))
