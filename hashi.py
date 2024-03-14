@@ -3,20 +3,10 @@
 import sys
 from itertools import product
 
-def convert(ch):
-    if (ch.isdigit()):
-        return int(ch)
-    elif (ch == 'a'):
-        return 10
-    elif (ch == 'b'):
-        return 11
-    elif (ch == 'c'):
-        return 12
-
 data = sys.stdin.read().split()
 coords = list(product(range(len(data)), range(len(data[0]))))
 points = {coord: [] for coord in coords}
-nodes = {(i, j): convert(data[i][j]) for i, j in coords if data[i][j] != '.'}
+nodes = {(i, j): int(data[i][j]) for i, j in coords if data[i][j] != '.'}
 bridges = []
 
 for coord, count in nodes.items():
@@ -35,24 +25,21 @@ for coord, count in nodes.items():
 points = {x: [x for x in y if x[1] != 0] for x, y in points.items()}
 candidates = [points[p] for p in coords if p not in nodes and len(points[p]) > 1]
 matrix = []
-# Change 4 to 5?
-total_length = len(nodes) + 5 * len(bridges) + len(candidates)
+total_length = len(nodes) + 4 * len(bridges) + len(candidates)
 start = 0
 start_nodes = {}
 
 for coord, count in nodes.items():
     connected = points[coord]
     bridge_length = len(connected) * 2
-    # Change (0,1,2) to (0,1,2,3)
-    for t in product(*((0, 1, 2, 3) for x in connected)):
+    for t in product(*((0, 1, 2) for x in connected)):
         if sum(t) != count:
             continue
         row = [0] * total_length
         row[start + bridge_length] = 1
         for i, x in enumerate(t):
             k = start + i * 2
-            # Change to row[k:k + 3?] = ((1, 1, 1), (0, 1, 1), (0, 0, 1), (0, 0, 0))[x]
-            row[k:k + 3] = ((1, 1, 1), (0, 1, 1), (0, 0, 1), (0, 0, 0))[x]
+            row[k:k + 2] = ((1, 1), (0, 1), (0, 0))[x]
         matrix += [row]
     start_nodes[coord] = start
     start += bridge_length + 1

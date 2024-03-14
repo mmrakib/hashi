@@ -115,8 +115,20 @@ for solution in search():
         (i, j), (x, y) = bridges[(bridge - matrix_length) // 2]
         if j == y:
             for row in range(i + 1, x):
-                grid[row][j] = '|H'[grid[row][j] == '|']
+                # grid[row][j] = '|H'[grid[row][j] == '|']
+                if (grid[row][j] == '"'):
+                    grid[row][j] = '#'
+                elif (grid[row][j] == '|'):
+                    grid[row][j] = '"'
+                else:
+                    grid[row][j] = '|'
         else:
             for col in range(j + 1, y):
-                grid[i][col] = '-='[grid[i][col] == '-']
+                # grid[i][col] = '-='[grid[i][col] == '-']
+                if (grid[i][col] == '='):
+                    grid[i][col] = 'E'
+                elif (grid[i][col] == '-'):
+                    grid[i][col] = '='
+                else:
+                    grid[i][col] = '-'
     print('\n'.join(''.join(row) for row in grid).replace('.', ' '))
