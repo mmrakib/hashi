@@ -264,7 +264,7 @@ for index, row in enumerate(matrix):
                 left[node] = right[node] = start_index = node
             right[left[start_index]], right[node], left[start_index], left[node] = node, start_index, node, left[start_index]
 
-# Execute backtracking search for solution, printing solution
+# Execute backtracking search for solution, printing each solution as it gets yielded
 for solution in search():
     grid = list(map(list, data))
     for bridge in solution:
